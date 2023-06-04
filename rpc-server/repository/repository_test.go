@@ -19,16 +19,16 @@ func TestSave(t *testing.T) {
 
 	// Create a sample message to save
 	message := &models.Message{
-		Sender:   "John",
-		ChatRoom: "Alice",
-		Body:     "Hello!",
+		ChatRoom: "room",
+		Sender:   "user",
+		Body:     "hello",
 	}
 
-	// Expected INSERT statement
+	// Set up expectations
 	mock.ExpectBegin()
 	mock.ExpectPrepare("INSERT INTO messages").
 		ExpectExec().
-		WithArgs("a", "b", "Hello, World!").
+		WithArgs(message.ChatRoom, message.Sender, message.Body).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 

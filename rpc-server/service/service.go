@@ -9,8 +9,6 @@ import (
 	"github.com/jh-chee/kitewave/rpc-server/repository"
 )
 
-// import "github.com/jh-chee/kitewave/rpc-server/models"
-
 type MessageService interface {
 	Send(req *rpc.SendRequest) error
 }

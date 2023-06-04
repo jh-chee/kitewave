@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	timeout = 5 * time.Second
+	timeout = 5 * time.Minute
 )
 
 type MessageRepository interface {
