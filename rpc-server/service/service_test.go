@@ -1,9 +1,66 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+
+	mocks "github.com/jh-chee/kitewave/rpc-server/mocks/repository"
+	"github.com/jh-chee/kitewave/rpc-server/models"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestNewMessageRepository(t *testing.T) {
+	repository := mocks.NewMessageRepository(t)
+	service := NewMessageRepository(repository)
+	assert.Implements(t, (*MessageService)(nil), service)
+	assert.Equal(t, repository, service.(*messageService).messageRepository)
+}
+
+func TestMessageService_Send(t *testing.T) {
+	mockMsg := &models.Message{
+		ChatRoom: "John:Mary",
+		Sender:   "John",
+		Body:     "Hello",
+	}
+
+	tests := []struct {
+		name    string
+		mockFn  func(messageRepo *mocks.MessageRepository, mockMsg *models.Message)
+		wantErr error
+	}{
+		{
+			name: "success",
+			mockFn: func(messageRepo *mocks.MessageRepository, mockMsg *models.Message) {
+				messageRepo.On("Save", mockMsg).Return(nil)
+			},
+			wantErr: nil,
+		},
+		{
+			name: "save error",
+			mockFn: func(messageRepo *mocks.MessageRepository, mockMsg *models.Message) {
+				messageRepo.On("Save", mockMsg).Return(errors.New("save error"))
+			},
+			wantErr: fmt.Errorf("unable to save msg: %w", errors.New("save error")),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			messageRepo := mocks.NewMessageRepository(t)
+			tt.mockFn(messageRepo, mockMsg)
+
+			messageSvc := &messageService{
+				messageRepository: messageRepo,
+			}
+
+			err := messageSvc.Send(mockMsg)
+
+			assert.Equal(t, tt.wantErr, err)
+			messageRepo.AssertExpectations(t)
+		})
+	}
+}
 
 func TestGetChatRoom(t *testing.T) {
 	tests := []struct {
@@ -44,7 +101,7 @@ func TestGetChatRoom(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, err := getChatRoom(test.chat)
+		result, err := sortParticipants(test.chat)
 
 		if result != test.expectedResult {
 			t.Errorf("Expected result: %s, but got: %s", test.expectedResult, result)

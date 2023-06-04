@@ -5,32 +5,39 @@ import (
 	"net/http"
 
 	"github.com/jh-chee/kitewave/rpc-server/kitex_gen/rpc"
+	"github.com/jh-chee/kitewave/rpc-server/models"
 	"github.com/jh-chee/kitewave/rpc-server/service"
 	"github.com/rs/zerolog/log"
 )
 
-type IMServiceInterface interface {
+type MessageHandler interface {
 	Send(ctx context.Context, req *rpc.SendRequest) (r *rpc.SendResponse, err error)
 	Pull(ctx context.Context, req *rpc.PullRequest) (r *rpc.PullResponse, err error)
 }
 
 // IMService implements the last service interface defined in the IDL.
-type IMService struct {
+type messageHandler struct {
 	messageService service.MessageService
 }
 
-func NewIMService(mssageService service.MessageService) IMServiceInterface {
-	return &IMService{
+func NewMessageHandler(mssageService service.MessageService) MessageHandler {
+	return &messageHandler{
 		messageService: mssageService,
 	}
 }
 
-func (s *IMService) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
+func (s *messageHandler) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
 	resp := rpc.NewSendResponse()
-	if err := s.messageService.Send(req); err != nil {
+	msg := &models.Message{
+		Sender:   req.Message.Sender,
+		ChatRoom: req.Message.Chat,
+		Body:     req.Message.Text,
+	}
+
+	if err := s.messageService.Send(msg); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("fail to send message")
 		resp.Code = http.StatusInternalServerError
-		return resp, nil
+		return resp, err
 	}
 
 	log.Ctx(ctx).Info().Msg("save to db successful")
@@ -38,7 +45,7 @@ func (s *IMService) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendRe
 	return resp, nil
 }
 
-func (s *IMService) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
+func (s *messageHandler) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
 	resp := rpc.NewPullResponse()
 	resp.Code, resp.Msg = http.StatusOK, "OK"
 	return resp, nil

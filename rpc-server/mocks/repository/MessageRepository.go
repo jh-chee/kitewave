@@ -13,29 +13,17 @@ type MessageRepository struct {
 }
 
 // Save provides a mock function with given fields: message
-func (_m *MessageRepository) Save(message *models.Message) (*models.Message, error) {
+func (_m *MessageRepository) Save(message *models.Message) error {
 	ret := _m.Called(message)
 
-	var r0 *models.Message
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*models.Message) (*models.Message, error)); ok {
-		return rf(message)
-	}
-	if rf, ok := ret.Get(0).(func(*models.Message) *models.Message); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*models.Message) error); ok {
 		r0 = rf(message)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Message)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(*models.Message) error); ok {
-		r1 = rf(message)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 type mockConstructorTestingTNewMessageRepository interface {

@@ -26,7 +26,7 @@ lint:
 build:
 	go build -v ./...
 
-mocks:
+mock:
 	cd http-server && mockery --keeptree -r --all
 	cd rpc-server && mockery --keeptree -r --all
 

@@ -25,7 +25,7 @@ func main() {
 
 	msgRepo := repository.NewMessageRepository(db)
 	msgSvc := service.NewMessageRepository(msgRepo)
-	IMSvc := handler.NewIMService(msgSvc)
+	msgHandler := handler.NewMessageHandler(msgSvc)
 
 	r, err := etcd.NewEtcdRegistry([]string{"etcd:2379"})
 	if err != nil {
@@ -33,12 +33,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	svr := rpc.NewServer(IMSvc, server.WithRegistry(r), server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
-		ServiceName: "demo.rpc.server",
-	}))
+	svr := rpc.NewServer(
+		msgHandler,
+		server.WithRegistry(r),
+		server.WithServerBasicInfo(
+			&rpcinfo.EndpointBasicInfo{
+				ServiceName: "demo.rpc.server",
+			},
+		),
+	)
 
-	err = svr.Run()
-	if err != nil {
+	if err = svr.Run(); err != nil {
 		log.Fatal().Err(err)
 		os.Exit(1)
 	}

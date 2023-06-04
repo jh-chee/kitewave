@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jh-chee/kitewave/rpc-server/kitex_gen/rpc"
 	"github.com/jh-chee/kitewave/rpc-server/models"
 	"github.com/jh-chee/kitewave/rpc-server/repository"
 )
 
 type MessageService interface {
-	Send(req *rpc.SendRequest) error
+	Send(msg *models.Message) error
 }
 
 type messageService struct {
@@ -23,16 +22,10 @@ func NewMessageRepository(messageRepository repository.MessageRepository) Messag
 	}
 }
 
-func (s *messageService) Send(req *rpc.SendRequest) error {
-	chatroom, err := getChatRoom(req.Message.Chat)
+func (s *messageService) Send(msg *models.Message) (err error) {
+	msg.ChatRoom, err = sortParticipants(msg.ChatRoom)
 	if err != nil {
 		return fmt.Errorf("unable to save msg: %w", err)
-	}
-
-	msg := &models.Message{
-		Sender:   req.Message.Sender,
-		ChatRoom: chatroom,
-		Body:     req.Message.Text,
 	}
 
 	if err := s.messageRepository.Save(msg); err != nil {
@@ -41,8 +34,8 @@ func (s *messageService) Send(req *rpc.SendRequest) error {
 	return nil
 }
 
-// Sort the participants in chat room in ascending order so user1:user2 is equivalent to user2:user1
-func getChatRoom(chat string) (string, error) {
+// Sort the participants in chat room in ascending order so user2:user1 is equivalent to user1:user2
+func sortParticipants(chat string) (string, error) {
 	participants := strings.Split(chat, ":")
 	if len(participants) != 2 {
 		return "", fmt.Errorf("received invalid chat format %s, expecting user1:user2", chat)
