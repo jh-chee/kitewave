@@ -47,6 +47,36 @@ func (s *messageHandler) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.S
 
 func (s *messageHandler) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
 	resp := rpc.NewPullResponse()
+	dbReq := &models.Request{
+		ChatRoom: req.Chat,
+		Cursor:   req.Cursor,
+		Limit:    req.Limit,
+		Reverse:  *req.Reverse,
+	}
+
+	dbResp, err := s.messageService.Pull(dbReq)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Msg("fail to pull message")
+		resp.Code = http.StatusInternalServerError
+		return resp, err
+	}
+
+	resp.SetMessages(toRpcMsgs(dbResp.Messages))
+	resp.SetHasMore(dbResp.HasMore)
+	resp.SetNextCursor(dbResp.NextCursor)
 	resp.Code, resp.Msg = http.StatusOK, "OK"
 	return resp, nil
+}
+
+func toRpcMsgs(dbMsgs []*models.Message) (rpcMsgs []*rpc.Message) {
+	for _, dbMsg := range dbMsgs {
+		rpcMsg := &rpc.Message{
+			Chat:     dbMsg.ChatRoom,
+			Text:     dbMsg.Body,
+			Sender:   dbMsg.Sender,
+			SendTime: dbMsg.Created,
+		}
+		rpcMsgs = append(rpcMsgs, rpcMsg)
+	}
+	return rpcMsgs
 }
