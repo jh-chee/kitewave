@@ -12,6 +12,32 @@ type MessageService struct {
 	mock.Mock
 }
 
+// Pull provides a mock function with given fields: req
+func (_m *MessageService) Pull(req *models.Request) (*models.Response, error) {
+	ret := _m.Called(req)
+
+	var r0 *models.Response
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*models.Request) (*models.Response, error)); ok {
+		return rf(req)
+	}
+	if rf, ok := ret.Get(0).(func(*models.Request) *models.Response); ok {
+		r0 = rf(req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Response)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*models.Request) error); ok {
+		r1 = rf(req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Send provides a mock function with given fields: msg
 func (_m *MessageService) Send(msg *models.Message) error {
 	ret := _m.Called(msg)

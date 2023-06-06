@@ -24,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cli = imservice.MustNewClient("demo.rpc.server",
+	cli = imservice.MustNewClient("kitewave.rpc.server",
 		client.WithResolver(r),
 		client.WithRPCTimeout(1*time.Second),
 		client.WithHostPorts("rpc-server:8888"),
@@ -82,7 +82,7 @@ func pullMessage(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
-	} else if resp.Code != 0 {
+	} else if resp.Code != http.StatusOK {
 		c.String(consts.StatusInternalServerError, resp.Msg)
 		return
 	}
@@ -95,6 +95,7 @@ func pullMessage(ctx context.Context, c *app.RequestContext) {
 			SendTime: msg.SendTime,
 		})
 	}
+
 	c.JSON(consts.StatusOK, &api.PullResponse{
 		Messages:   messages,
 		HasMore:    resp.GetHasMore(),

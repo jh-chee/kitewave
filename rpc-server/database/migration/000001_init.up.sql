@@ -3,5 +3,5 @@ CREATE TABLE IF NOT EXISTS messages (
     chat_room TEXT,
     sender TEXT,
     body TEXT,
-    created TIMESTAMP DEFAULT NOW()
+    created BIGINT DEFAULT (UNIX_TIMESTAMP())
 );

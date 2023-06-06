@@ -1,14 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"github.com/rs/zerolog/log"
 
-	db "github.com/jh-chee/kitewave/rpc-server/database"
+	"github.com/jh-chee/kitewave/rpc-server/database"
 	rpc "github.com/jh-chee/kitewave/rpc-server/kitex_gen/rpc/imservice"
 
 	"github.com/jh-chee/kitewave/rpc-server/handler"
@@ -17,11 +20,12 @@ import (
 )
 
 func main() {
-	db, err := db.InitDB()
+	db, err := database.InitDB()
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to connect to db")
 		os.Exit(1)
 	}
+	registerCleanup(db)
 
 	msgRepo := repository.NewMessageRepository(db)
 	msgSvc := service.NewMessageRepository(msgRepo)
@@ -38,7 +42,7 @@ func main() {
 		server.WithRegistry(r),
 		server.WithServerBasicInfo(
 			&rpcinfo.EndpointBasicInfo{
-				ServiceName: "demo.rpc.server",
+				ServiceName: "kitewave.rpc.server",
 			},
 		),
 	)
@@ -47,4 +51,23 @@ func main() {
 		log.Fatal().Err(err)
 		os.Exit(1)
 	}
+
+	waitForTerminationSignal()
+}
+
+func registerCleanup(db *sql.DB) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-c
+		db.Close()
+		os.Exit(0)
+	}()
+}
+
+func waitForTerminationSignal() {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	<-sig
 }
