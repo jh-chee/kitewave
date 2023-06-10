@@ -70,10 +70,10 @@ func (r *messageRepository) Pull(req *models.Request) ([]*models.Message, int64,
 	defer cancel()
 
 	sortOrder := "ASC"
-	cursorCondition := fmt.Sprintf(" AND created > %d", req.Cursor)
+	cursorCondition := fmt.Sprintf(" AND created >= %d", req.Cursor)
 	if req.Reverse {
 		sortOrder = "DESC"
-		cursorCondition = fmt.Sprintf(" AND created < %d", req.Cursor)
+		cursorCondition = fmt.Sprintf(" AND created <= %d", req.Cursor)
 	}
 
 	// No cursor given
@@ -103,7 +103,7 @@ func (r *messageRepository) Pull(req *models.Request) ([]*models.Message, int64,
 
 	nextCursor := int64(0)
 	if len(messages) > int(req.Limit) {
-		lastMessage := messages[req.Limit-1]
+		lastMessage := messages[req.Limit]
 		nextCursor = lastMessage.Created
 		messages = messages[:req.Limit] // Remove the extra message beyond the limit
 	}

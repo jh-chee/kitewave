@@ -32,6 +32,5 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: chat
-      MYSQL_USER: root
     ports:
       - "3306:3306"
