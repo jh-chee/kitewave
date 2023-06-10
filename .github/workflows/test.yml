@@ -11,6 +11,22 @@ on:
 
 jobs:
 
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.19'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.51.2
+          args: -v --timeout 5m0s http-server rpc-server
+
   http-server:
     runs-on: ubuntu-latest
     defaults:
