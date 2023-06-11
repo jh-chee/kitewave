@@ -31,6 +31,16 @@ mock:
 	cd rpc-server && mockery --keeptree -r --all
 
 compose:
-	docker-compose build http-server 
-	docker-compose build rpc-server 
+	docker-compose build kitewave-http-server 
+	docker-compose build kitewave-rpc-server 
 	docker-compose up
+
+docker-build: docker-build-http docker-build-rpc
+
+docker-build-http:
+	docker build ./http-server -t kitewave-http-server:latest
+
+docker-build-rpc:
+	docker build ./rpc-server -t kitewave-rpc-server:latest
+
+.PHONY: pre generate test lint build mock compose docker-build docker-build-http docker-build-rpc
