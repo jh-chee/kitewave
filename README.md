@@ -22,5 +22,5 @@ helm install kitewave kitewave
 ```
 ---
 ## Todo
-- Add gh action to push images to docker hub
-- Add HPA
+- Gh action to push images to docker hub
+- Gh action to test helm chart, [helm-chart-testing](https://github.com/marketplace/actions/helm-chart-testing) looks promising 
