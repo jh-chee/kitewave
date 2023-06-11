@@ -17,7 +17,7 @@ const (
 	// Define the MySQL connection parameters
 	dbUser = "root"
 	dbPass = "password"
-	dbHost = "mysql"
+	dbHost = "kitewave-mysql"
 	dbPort = 3306
 	dbName = "chat"
 

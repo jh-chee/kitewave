@@ -31,7 +31,7 @@ func main() {
 	msgSvc := service.NewMessageRepository(msgRepo)
 	msgHandler := handler.NewMessageHandler(msgSvc)
 
-	r, err := etcd.NewEtcdRegistry([]string{"etcd:2379"})
+	r, err := etcd.NewEtcdRegistry([]string{"kitewave-etcd:2379"})
 	if err != nil {
 		log.Fatal().Err(err)
 		os.Exit(1)

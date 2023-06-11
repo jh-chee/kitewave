@@ -20,14 +20,14 @@ import (
 var cli imservice.Client
 
 func main() {
-	r, err := etcd.NewEtcdResolver([]string{"etcd:2379"})
+	r, err := etcd.NewEtcdResolver([]string{"kitewave-etcd:2379"})
 	if err != nil {
 		log.Fatal(err)
 	}
 	cli = imservice.MustNewClient("kitewave.rpc.server",
 		client.WithResolver(r),
 		client.WithRPCTimeout(1*time.Second),
-		client.WithHostPorts("rpc-server:8888"),
+		client.WithHostPorts("kitewave-rpc-server:8888"),
 	)
 
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
