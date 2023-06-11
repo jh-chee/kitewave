@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
@@ -24,7 +25,7 @@ const (
 	migrationPath = "file://database/migration"
 
 	retryInterval = 5 * time.Second
-	timeout       = 30 * time.Second
+	timeout       = 90 * time.Second
 )
 
 func InitDB() (*sql.DB, error) {
@@ -55,9 +56,12 @@ func InitDB() (*sql.DB, error) {
 }
 
 func connectDB(dataSourceName string) (*sql.DB, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
 	for {
 		select {
-		case <-time.After(timeout):
+		case <-ctx.Done():
 			return nil, fmt.Errorf("unable to establish database connection within timeout")
 		default:
 			db, err := sql.Open("mysql", dataSourceName)
